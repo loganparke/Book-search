@@ -5,10 +5,11 @@ const { signToken } = require('../utils/auth');
 
 const resolvers = {
   Query: {
-    me: async (parent, args, context) => {
+    user: async (parent, args, context) => {
       if (context.user) {
-        const userData = await User.findOne({ _id: context.user._id })
-          .select('-__v -password');
+        const userData = await User.findOne({ email: context.user.email })
+          .select('-__v -password')
+          .populate('savedBooks');
         return userData;
       }
     }
@@ -28,7 +29,7 @@ const resolvers = {
         throw new AuthenticationError('this email is not associated with an account');
       }
 
-      const correctPw = await User.isCorrectPassword(password);
+      const correctPw = await user.isCorrectPassword(password);
 
       if (!correctPw) {
         throw new AuthenticationError('Incorrect password')
@@ -37,11 +38,11 @@ const resolvers = {
       const token = signToken(user);
       return { token, user };
     },
-    saveBook: async (parent, { userId, bookId }, context) => {
+    saveBook: async (parent, { bookId }, context) => {
       if(context.user) {
         const updatedUser = await User.findOneAndUpdate(
-          { _id: userId },
-          { $push: {savedBooks: { bookId }}},
+          { _id: context.user._id },
+          { $addToSet: {savedBooks: bookId } },
           { new: true }
         );
 
