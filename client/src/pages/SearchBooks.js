@@ -65,24 +65,27 @@ const SearchBooks = () => {
 
     // get token
     const userr = Auth.getProfile();
-    const userId = userr.data._id;
     const token = Auth.loggedIn() ? Auth.getToken() : null;
     if (!token) {
       console.log('notoken')
       return false;
     }
     try {
+
+      console.log(bookToSave);
+      console.log(id);
       const response = await saveBook({
-        variables: {bookId: id}
+        variables: { bookInput: {...bookToSave} }
       });
       console.log(response);
+
       if (!response) {
         throw new Error('something went wrong!');
       }
-      console.log('worked')
+      console.log('3')
       // if book successfully saves to user's account, save book id to state
       setSavedBookIds([...savedBookIds, bookToSave.bookId]);
-      console.log('worked')
+      console.log('4')
     } catch (err) {
       console.log('error');
       console.error(err);

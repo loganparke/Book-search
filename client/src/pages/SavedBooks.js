@@ -9,57 +9,51 @@ import { removeBookId } from '../utils/localStorage';
 import { useMutation, useQuery } from '@apollo/client';
 
 const SavedBooks = () => {
-  const [userData, setUserData] = useState(Auth.getProfile().data);
+  const [userData, setUserData] = useState();
   const email = Auth.getProfile().data.email;
   // use this to determine if `useEffect()` hook needs to run again
-  console.log(email);
-  console.log(userData);
-  const { loading, data, error } = useQuery(QUERY_ME, {
-    variables: {email: email}
-  });
-  if(loading){
-    console.log(loading);
-  } else {
-    console.log(data);
-  }
-  const userDataLength = Object.keys(Auth.getProfile()).length;
 
-  const user = data?.user || [];
-
-  //setUserData(data);
-  console.log(user);
-  
+  const { loading, data } = useQuery(QUERY_ME); 
   const [deleteBook] = useMutation(DELETE_BOOK);
-  //console.log(useQuery(QUERY_ME));
-  useEffect(() => {
+  if(loading){
+    return <h1>loading</h1>
+  } 
+  console.log(data);
+  const user = data || [];
   
-    const getUserData = async () => {
-      try {
-        console.log('useEfect')
-        const token = Auth.loggedIn() ? Auth.getToken() : null;
-        const person = Auth.getProfile();
-        const userId = person.data._id;
-        console.log(person);
-        console.log(data);
-        if (!token) {
-          console.log('no token')
-          return false;
-        }
 
-        if (!data) {
-          throw new Error('something went wrong!');
-        }
 
-        const userr = await data;
-        console.log(userr);
-        setUserData(userr);
-      } catch (err) {
-        console.error(err);
-      }
-    };
+  // useEffect(() => {
+  
+  //   const getUserData = async () => {
+  //     try {
+  //       console.log('useEfect')
+  //       const token = Auth.loggedIn() ? Auth.getToken() : null;
+  //       const person = Auth.getProfile();
+  //       console.log(person);
+  //       console.log(user);
+  //       if (!token) {
+  //         console.log('no token')
+  //         return false;
+  //       }
 
-    getUserData();
-  }, []);
+  //       if (!user) {
+  //         throw new Error('something went wrong!');
+  //       }
+
+  //       if(data){
+  //         console.log(user);
+  //         setUserData(user);
+  //       }
+  //       // const userr = await data;
+
+  //     } catch (err) {
+  //       console.error(err);
+  //     }
+  //   };
+
+  //   getUserData();
+  // }, []);
 
   // create function that accepts the book's mongo _id value as param and deletes the book from the database
   const handleDeleteBook = async (bookId) => {
@@ -88,7 +82,8 @@ const SavedBooks = () => {
   // if data isn't here yet, say so
   if (loading) {
     return <h2>LOADING...</h2>;
-  }
+  } 
+
   console.log(userData);
   return (
     <>
@@ -99,12 +94,12 @@ const SavedBooks = () => {
       </Jumbotron>
       <Container>
         <h2>
-          {userData.savedBooks.length
-            ? `Viewing ${userData.savedBooks.length} saved ${userData.savedBooks.length === 1 ? 'book' : 'books'}:`
+          {data?.user?.savedBooks?.length
+            ? `Viewing ${data?.user?.savedBooks?.length} saved ${data?.user?.savedBooks?.length === 1 ? 'book' : 'books'}:`
             : 'You have no saved books!'}
         </h2>
         <CardColumns>
-          {userData.savedBooks.map((book) => {
+          {data?.user?.savedBooks?.map((book) => {
             return (
               <Card key={book.bookId} border='dark'>
                 {book.image ? <Card.Img src={book.image} alt={`The cover for ${book.title}`} variant='top' /> : null}
